@@ -5,7 +5,7 @@ import json
 import uuid
 from time import sleep
 from datetime import datetime, timezone
-from lights.protocols import tpkasa, wled, mqtt, hyperion, yeelight, hue, deconz, native_multi, tasmota, shelly, esphome, tradfri, elgato
+from lights.protocols import tpkasa, wled, mqtt, hyperion, yeelight, hue, hue_bl, deconz, native_multi, tasmota, shelly, esphome, tradfri, elgato
 from services import homeAssistantWS
 from HueObjects import Light, StreamEvent
 from functions.core import nextFreeId
@@ -127,6 +127,8 @@ def scanForLights():  # scan for ESP8266 lights and strips
     discoveryEvent()
     detectedLights = []
 
+    hue_bl.discover(detectedLights)
+
     if bridgeConfig["config"]["port"]["enabled"]:
         device_ips = []
         for ports in bridgeConfig["config"]["port"]["ports"]:
@@ -198,7 +200,7 @@ def scanForLights():  # scan for ESP8266 lights and strips
                         logging.info("Update IP for light " + light["name"])
                         lightObj.protocol_cfg["ip"] = light["protocol_cfg"]["ip"]
                         lightIsNew = False
-                elif light["protocol"] in ["hue", "deconz"]:
+                elif light["protocol"] in ["hue", "hue_bl", "deconz"]:
                     # check based on light uniqueid and modelid
                     if lightObj.protocol_cfg["uniqueid"] == light["protocol_cfg"]["uniqueid"]  and lightObj.modelid == light["modelid"]:
                         logging.info("Update IP for light " + light["name"])
