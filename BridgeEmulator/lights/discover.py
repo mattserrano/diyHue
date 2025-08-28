@@ -251,8 +251,8 @@ def discover_lights(detectedLights: List[Dict], device_ips: List[str]) -> None:
         wled.discover(detectedLights, device_ips)
     if bridgeConfig["config"]["hue"]:
         hue.discover(detectedLights, bridgeConfig["config"]["hue"])
-    if bridgeConfig["config"]["hue_bl"]["enabled"]:
-        hue_bl.discover(detectedLights)
+    # bridgeConfig["config"]["hue_bl"]["enabled"]: TODO: Uncomment this conditional
+    hue_bl.discover(detectedLights)
     if bridgeConfig["config"]["shelly"]["enabled"]:
         shelly.discover(detectedLights, device_ips)
     if bridgeConfig["config"]["esphome"]["enabled"]:

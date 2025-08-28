@@ -9,7 +9,8 @@ asyncio.set_event_loop(loop)
 
 ### libhueble ###
 ### https://github.com/alexhorn/libhueble/ ###
-from bleak import BleakClient, BleakScanner
+from bleak import BleakScanner
+from bleak_retry_connector import establish_connection, BleakClientWithServiceCache
 from struct import pack, unpack
 
 # device name as an ASCII string
@@ -28,6 +29,7 @@ CHAR_TEMPERATURE = '932c32bd-0004-47a2-835a-a8d455b859dd'
 # Bluetooth UUID for Hue lights
 HUE_SERVICE_IDENTIFIER_UUID = "0000fe0f-0000-1000-8000-00805f9b34fb"
 DISCOVERY_TIMEOUT_SEC = 5
+MAX_RECONNECT_ATTEMPTS = 10
 
 class Lamp(object):
     """A wrapper for the Philips Hue BLE protocol"""
@@ -44,15 +46,21 @@ class Lamp(object):
 
     async def connect(self):
         # reinitialize BleakClient for every connection to avoid errors
-        self.client = BleakClient(self.address, pair=True)
         logging.debug(f"Connecting to Hue Bluetooth light with address: {self.address}")
-        await self.client.connect()
+        device = await BleakScanner.find_device_by_address(self.address)
+        self.client = await establish_connection(
+            BleakClientWithServiceCache,
+            device,
+            name=device.name or device.address,
+            max_attemps=MAX_RECONNECT_ATTEMPTS
+        )
         self.name = await self.get_name()
         self.model = await self.get_model()
         return self.client.is_connected
 
     async def disconnect(self):
         try:
+            await self.client.clear_cache()
             await self.client.disconnect()
         except Exception as e:
             logging.error(f"Error disconnecting from Hue Bluetooth light: {e}")

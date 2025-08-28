@@ -16,4 +16,5 @@ flask_cors
 yeelight
 python-kasa==0.4.1
 bleak>=0.21
+bleak-retry-connector
 rgbxy
